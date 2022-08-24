@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref, watch, onMounted, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
@@ -62,7 +62,7 @@ function slideRightClick() {
   if (slide.value === slideData.value.list.length - 1) {
     goToNextPage(`/story/${slideData.value.id + 1}`);
     if (slideData.value.id + 1 === 2) {
-      goToNextPage('/');
+      goToNextPage("/");
     }
   }
   slide.value += 1;
@@ -73,7 +73,7 @@ function slideLeftClick() {
   if (slide.value === 0) {
     goToNextPage(`/story/${slideData.value.id - 1}`);
     if (slideData.value.id === 0) {
-      goToNextPage('/');
+      goToNextPage("/");
     }
   }
   slide.value -= 1;
@@ -103,7 +103,7 @@ function autoSlide() {
   if (slide.value === slideData.value.list.length - 1) {
     goToNextPage(`/story/${slideData.value.id + 1}`);
     if (slideData.value.id + 1 === 2) {
-      goToNextPage('/');
+      goToNextPage("/");
     }
     slide.value += 1;
   }
@@ -114,9 +114,9 @@ function autoSlide() {
   reset();
 }
 
-function holdHandler(link, event) {
+function holdHandler(event) {
   const { type, timeStamp } = event;
-  if (type === 'mousedown') {
+  if (type === "mousedown") {
     mouseEventTime.value.mousedown = timeStamp;
     pausePercentage.value = currentPercentage.value;
     clearInterval(progressbarTimer.value);
@@ -125,16 +125,8 @@ function holdHandler(link, event) {
       duration.value - (pausePercentage.value * duration.value) / 100;
   }
 
-  if (type === 'mouseup') {
+  if (type === "mouseup") {
     mouseEventTime.value.mouseup = timeStamp;
-
-    if (
-      mouseEventTime.value.mouseup - mouseEventTime.value.mousedown < 150 &&
-      link
-    ) {
-      window.open(link, '_self');
-      return;
-    }
     playProgressbar();
   }
 }
@@ -203,18 +195,15 @@ watch(slide, (newSlide) => {
     >
       <q-carousel-slide
         class="story-carousel"
-        v-for="(image, i) in slideData?.list"
+        v-for="(_, i) in slideData?.list"
         :key="i"
         :name="i"
-        @mousedown="holdHandler(image.link, $event)"
-        @mouseup="holdHandler(image.link, $event)"
+        @mousedown="holdHandler($event)"
+        @mouseup="holdHandler($event)"
       >
-        <img
-          class="carousel-image"
-          :src="image.images"
-          alt=""
-          draggable="false"
-        />
+        <div class="carousel-background">
+          <p class="carousel-content">[주요 기능]</p>
+        </div>
       </q-carousel-slide>
     </q-carousel>
   </section>
@@ -302,9 +291,16 @@ watch(slide, (newSlide) => {
     .story-carousel {
       padding: 0;
 
-      .carousel-image {
+      .carousel-background {
         width: 100%;
         height: 100%;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-image: url("../assets/css/background.png");
+
+        .carousel-content {
+          padding: 50px 15px;
+        }
       }
     }
   }

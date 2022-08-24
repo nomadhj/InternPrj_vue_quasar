@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import CircleImg from './CircleImg.vue';
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import CircleImg from "./CircleImg.vue";
 
 const router = useRouter();
 
@@ -10,12 +10,11 @@ const profilesLen = ref(0);
 
 async function fetchProfile() {
   const res = await fetch(
-    'https://vueproject-8c9fd-default-rtdb.firebaseio.com/story.json'
+    "https://vueproject-8c9fd-default-rtdb.firebaseio.com/story.json"
   );
   const data = await res.json();
   profiles.value = data;
   profilesLen.value = Object.keys(data).length;
-  console.log(data);
 }
 
 onMounted(() => {
@@ -27,12 +26,6 @@ onMounted(() => {
   <section class="main-wrapper">
     <header class="header row">
       <img src="images/logo.png" alt="logo" />
-      <q-icon
-        class="notification-icon"
-        name="notifications_none"
-        size="27.44px"
-        @click="router.push('/story/1')"
-      />
     </header>
     <div class="circle-content-wrapper row">
       <CircleImg
@@ -42,38 +35,31 @@ onMounted(() => {
         :profileLen="profilesLen"
       />
     </div>
-
     <q-card class="circle-card q-mt-md q-pd-lg">
-      <q-card-section class="column no-wrap circle-card-section">
-        <q-icon name="wallet" size="42px" />
-        <div class="circle-card-title">Wallet Watch 👀</div>
-        <div class="feature-img-wrapper row flex-center">
-          <q-img
-            class="circle-card-img q-mt-md"
-            src="https://trippy.place/img/img-push.963babe8.png"
-            alt="card image"
-            no-spinner
-          />
-        </div>
+      <q-card-section class="circle-card-section column no-wrap">
+        <p class="circle-card-desc">프로젝트 메인 페이지입니다.</p>
         <p class="circle-card-desc">
-          Want to get APP PUSH notifications for your wallet activities? Want to
-          follow the whales? Track any wallet’s latest activities including
-          mints, buys and sells.
+          기업 협업으로 진행 된 프로젝트로<br />
+          문제가 될 만한 이미지, 코드는 삭제하였습니다.
         </p>
-        <q-btn
-          unelevated
-          rounded
-          label="Watch Now >"
-          class="circle-card-btn q-mt-md"
-          ref="button"
-          @click="() => navigate('/')"
-        />
+        <p class="circle-card-desc">
+          상기 아이콘을 클릭해서 내용을 확인할 수 있으나,<br />
+          실제 앱에 배포 된 기능 중 일부는 삭제하였습니다.<br />
+          전체 기능은 실제 배포 된 앱에서 확인 가능합니다.
+        </p>
+        <p class="circle-card-desc">
+          [주요 기능]<br />
+          1 .서버의 데이터 갯수만큼 자동으로<br />
+          아이콘 및 페이지가 추가 되는 구조<br />
+          (현재 서버에 섹션 3개가 저장되어 3개 아이콘 적용 됨)<br />
+          2. 방문한 섹션은 이력을 Local storage에 저장,<br />
+          아이콘 주변의 highlight가 사라지도록 구현
+        </p>
+        <p class="circle-card-desc">
+          <a href="https://trippy.place/">실제 App 주소 (click) </a>
+        </p>
       </q-card-section>
     </q-card>
-    <img
-      src="https://pub.angelleague.io/2022/06/29/1656485183_testImg.png"
-      alt=""
-    />
   </section>
 </template>
 
@@ -104,10 +90,6 @@ onMounted(() => {
       width: 165px;
       height: 32px;
     }
-
-    .notification-icon {
-      color: white;
-    }
   }
 
   .circle-content-wrapper {
@@ -134,52 +116,23 @@ onMounted(() => {
     rgba(227, 227, 227, 0.15) 114%
   );
   border-radius: 25px;
-  background-image: url('https://t4.ftcdn.net/jpg/04/91/94/07/240_F_491940770_ETcZHfu6eiI2ygQVwI6oXHFC28UH58PI.jpg');
+  background-image: url("../assets/css/main.png");
   background-size: cover;
 
   .circle-card-section {
-    color: white;
-
-    .circle-card-title {
-      font-weight: 700;
-      font-size: 30px;
-    }
+    height: 50vh;
 
     .circle-card-desc {
-      margin: 0;
-      font-size: 14px;
-    }
+      margin: 10px;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      line-height: 20px;
 
-    .feature-img-wrapper {
-      width: 100%;
-      margin: 0.5rem auto;
-      border-radius: 10px;
-
-      .circle-card-img {
-        width: 100%;
-        max-height: 250px;
-        margin: 0;
+      a {
+        text-decoration: none;
       }
     }
-
-    .circle-card-btn {
-      width: 100%;
-      height: 3rem;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 40px;
-    }
   }
-}
-
-.circle-content-wrapper {
-  -ms-overflow-style: none;
-  /* for Internet Explorer, Edge */
-  scrollbar-width: none;
-  /* for Firefox */
-}
-
-.circle-content-wrapper::-webkit-scrollbar {
-  display: none;
-  /* for Chrome, Safari, and Opera */
 }
 </style>

@@ -1,8 +1,8 @@
 <script setup>
-import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
+import { useRouter } from "vue-router";
+import { onMounted } from "vue";
 
-const props = defineProps(['id', 'profile_img', 'title', 'proflieLen']);
+const props = defineProps(["id", "title", "proflieLen"]);
 
 const router = useRouter();
 
@@ -19,9 +19,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="circle-wrapper column no-wrap flex-center" @click="() => moveTo(`/story/${id}`)">
-    <div class="circle-img-wrapper" :class="{ 'circle-active': isActive === 'true' }">
-      <img :src="profile_img" alt="profile image" />
+  <div
+    class="circle-wrapper column no-wrap flex-center"
+    @click="() => moveTo(`/story/${id}`)"
+  >
+    <div
+      class="circle-img-wrapper"
+      :class="{ 'circle-active': isActive === 'true' }"
+    >
+      <img src="images/section.png" alt="section" />
     </div>
     <p class="circle-sub">{{ title }}</p>
   </div>

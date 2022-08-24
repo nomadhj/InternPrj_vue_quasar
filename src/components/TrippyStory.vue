@@ -32,6 +32,7 @@ async function fetchData(id) {
 
 function goToNextPage(path) {
   router.push({ path });
+  reset();
 }
 
 function playProgressbar() {
@@ -65,6 +66,11 @@ function slideByClick({ offsetX }) {
     return;
   }
   isSliding.value = true;
+
+  setTimeout(() => {
+    isSliding.value = false;
+  }, 300);
+
   const guideWidth = document.querySelector(
     ".trippy-stroy-wrapper"
   ).offsetWidth;
@@ -81,17 +87,11 @@ function slideByClick({ offsetX }) {
     slide.value -= 1;
   } else if (slide.value === 0 && offsetX < guideWidth / 2) {
     if (slideDataIndex.value === 0) {
-      setTimeout(() => {
-        isSliding.value = false;
-      }, 300);
+      isSliding.value = false;
       return;
     }
-    goToNextPage(`/story/${slideData.value.id + 1}`);
+    goToNextPage(`/story/${slideData.value.id - 1}`);
   }
-  reset();
-  setTimeout(() => {
-    isSliding.value = false;
-  }, 300);
 }
 
 function slideSwipe(event) {
@@ -105,13 +105,11 @@ function slideSwipe(event) {
     if (slideDataIndex.value + 1 === numOfTotalPages.value) {
       goToNextPage("/");
     }
-    reset();
   } else if (direction === "right" && distance.x > 150 && isFinal) {
     if (slideDataIndex.value === 0) {
       return;
     }
     goToNextPage(`/story/${slideData.value.id - 1}`);
-    reset();
   }
 }
 
@@ -129,7 +127,13 @@ function autoSlide() {
   reset();
 }
 
-function holdHandler() {
+function swipeToClose({ distance, isFinal }) {
+  if (distance.y > SWIPELIMIT_CLOSEMODAL && isFinal) {
+    goToNextPage("/");
+  }
+}
+
+function pauseHandler() {
   if (isPause.value === false) {
     pausePercentage.value = currentPercentage.value;
     clearInterval(progressbarTimer.value);
@@ -188,8 +192,7 @@ watch(slide, (newSlide) => {
     <div class="guides-close" @click="goToNextPage('/')">
       <q-icon name="close" size="36px" />
     </div>
-    <div class="guides-pause" @click="holdHandler">
-      <!-- 호출을 하는게 맞는지, 포인터만 넘기는게 맞는지? -->
+    <div class="guides-pause" @click="pauseHandler">
       <q-icon v-if="isPause" name="play_arrow" size="36px" />
       <q-icon v-else name="pause" size="36px" />
     </div>
@@ -207,9 +210,28 @@ watch(slide, (newSlide) => {
         :key="i"
         :name="i"
         v-touch-pan.left.right="slideSwipe"
+        v-touch-pan.down="swipeToClose"
       >
         <div class="carousel-background">
-          <p class="carousel-content">[주요 기능]</p>
+          <h2 class="carousel-title">
+            {{ `# ${slideDataIndex + 1} Story ${i + 1} Page` }}
+          </h2>
+          <h2 class="carousel-subTitle">[주요 기능]</h2>
+          <p class="carousel-content">
+            1. auto slide 기능<br />
+            - 자동 슬라이드 및 상단 인디케이터 바<br />
+            - 자동 슬라이드 멈춤 버튼 적용<br /><br />
+            2. 클릭 및 스와이프 기능<br />
+            - 좌우 클릭 시 다음 페이지로 이동<br />
+            - 좌우 스와이프 시 다음 스토리로 이동 (모바일에서 확인 가능)<br />
+            - 첫 스토리의 첫 페이지에서는 이전 페이지로 돌아가지 않고,<br />
+            마지막 스토리의 마지막 페이지에서는 메인으로 돌아가도록 구현<br /><br />
+            3. close 기능 - 우측 상단 x 버튼을 누르거나, <br />
+            화면을 아래로 스와이프 시 메인 페이지로 이동<br /><br />
+            4. 기타 구현 사항<br />
+            - 각 스토리, 페이지는 하나의 컴포넌트로 구현하였으며, <br />
+            - 서버에 저장된 데이터 수에 따라 자동으로 렌더링 됨
+          </p>
         </div>
       </q-carousel-slide>
     </q-carousel>
@@ -217,7 +239,7 @@ watch(slide, (newSlide) => {
 </template>
 
 <style lang="scss">
-/* @media only screen and (max-width: 475px) {
+@media only screen and (max-width: 475px) {
   .trippy-stroy-wrapper {
     max-width: 360px;
   }
@@ -225,7 +247,7 @@ watch(slide, (newSlide) => {
   .carousel-background {
     width: 360px;
   }
-} */
+}
 
 .trippy-stroy-wrapper {
   position: relative;
@@ -306,8 +328,25 @@ watch(slide, (newSlide) => {
         background-repeat: no-repeat;
         background-image: url("../assets/css/background.png");
 
+        .carousel-title {
+          padding: 50px 15px 0 15px;
+          color: rgb(18, 48, 116);
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        .carousel-subTitle {
+          padding: 15px;
+          font-size: 16px;
+          font-weight: bold;
+        }
+
         .carousel-content {
-          padding: 50px 15px;
+          padding: 15px;
+          color: rgb(73, 73, 73);
+          font-size: 16px;
+          font-weight: bold;
+          line-height: 20px;
         }
       }
     }

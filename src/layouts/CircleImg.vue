@@ -61,6 +61,7 @@ onMounted(() => {
     margin: 0;
     line-height: 1;
     color: white;
+    font-weight: bold;
   }
 }
 </style>

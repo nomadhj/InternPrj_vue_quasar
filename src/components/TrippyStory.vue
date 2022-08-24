@@ -1,12 +1,12 @@
 <script setup>
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
-
 const slide = ref(0);
-const slideData = ref(null);
+const slideData = ref();
+const slideDataIndex = ref();
 const activePageIndex = ref(0);
 const duration = ref(5000);
 const modifiedDuration = ref(0);
@@ -14,21 +14,20 @@ const currentPercentage = ref(0);
 const pausePercentage = ref(0);
 const progressbarTimer = ref(0);
 const slideTimer = ref(0);
-const mouseEventTime = ref({
-  mousedown: 0,
-  mouseup: 0,
-});
+const isPause = ref(false);
+const isSliding = ref(false);
+const numOfTotalPages = ref(0);
 
-// const calculatedPath = computed(() => {
-//   return route.params.id;
-// });
-
-async function fetchData() {
+async function fetchData(id) {
   const res = await fetch(
-    `https://vueproject-8c9fd-default-rtdb.firebaseio.com/story/${route.params.id}.json`
+    `https://vueproject-8c9fd-default-rtdb.firebaseio.com/story.json`
   );
   const data = await res.json();
-  slideData.value = data;
+  const targetItem = data.find((datum) => datum.id === +id);
+  const targetItemIndex = data.indexOf(targetItem);
+  numOfTotalPages.value = data.length;
+  slideData.value = targetItem;
+  slideDataIndex.value = targetItemIndex;
 }
 
 function goToNextPage(path) {
@@ -36,9 +35,9 @@ function goToNextPage(path) {
 }
 
 function playProgressbar() {
-  const initialTime = new Date().getTime();
+  const initialTime = Date.now();
   progressbarTimer.value = setInterval(() => {
-    let currentTime = new Date().getTime();
+    let currentTime = Date.now();
 
     if (modifiedDuration.value > 0) {
       currentPercentage.value =
@@ -58,77 +57,89 @@ function playProgressbar() {
   }
 }
 
-function slideRightClick() {
-  if (slide.value === slideData.value.list.length - 1) {
+function slideByClick({ offsetX }) {
+  if (isSliding.value) {
+    return;
+  }
+  if (isPause.value) {
+    return;
+  }
+  isSliding.value = true;
+  const guideWidth = document.querySelector(
+    ".trippy-stroy-wrapper"
+  ).offsetWidth;
+  if (offsetX >= guideWidth / 2) {
+    if (slide.value === slideData.value.list.length - 1) {
+      goToNextPage(`/story/${slideData.value.id + 1}`);
+      if (slideDataIndex.value + 1 === numOfTotalPages.value) {
+        goToNextPage("/");
+      }
+    } else {
+      slide.value += 1;
+    }
+  } else if (slide.value > 0 && offsetX < guideWidth / 2) {
+    slide.value -= 1;
+  } else if (slide.value === 0 && offsetX < guideWidth / 2) {
+    if (slideDataIndex.value === 0) {
+      setTimeout(() => {
+        isSliding.value = false;
+      }, 300);
+      return;
+    }
     goToNextPage(`/story/${slideData.value.id + 1}`);
-    if (slideData.value.id + 1 === 2) {
-      goToNextPage("/");
-    }
   }
-  slide.value += 1;
   reset();
+  setTimeout(() => {
+    isSliding.value = false;
+  }, 300);
 }
 
-function slideLeftClick() {
-  if (slide.value === 0) {
+function slideSwipe(event) {
+  const { direction, distance, isFinal } = event;
+
+  if (isPause.value) {
+    return;
+  }
+  if (direction === "left" && distance.x > 150 && isFinal) {
+    goToNextPage(`/story/${slideData.value.id + 1}`);
+    if (slideDataIndex.value + 1 === numOfTotalPages.value) {
+      goToNextPage("/");
+    }
+    reset();
+  } else if (direction === "right" && distance.x > 150 && isFinal) {
+    if (slideDataIndex.value === 0) {
+      return;
+    }
     goToNextPage(`/story/${slideData.value.id - 1}`);
-    if (slideData.value.id === 0) {
-      goToNextPage("/");
-    }
+    reset();
   }
-  slide.value -= 1;
-  reset();
 }
-
-// function slideByClick({ clientX }) {
-//   if (clientX >= window.innerWidth / 2) {
-//     if (slide.value === slideData.value.list.length - 1) {
-//       goToNextPage(`/story/${slideData.value.id + 1}`);
-//       if (slideData.value.id + 1 === 2) {
-//         goToNextPage('/');
-//       }
-//     } else {
-//       slide.value += 1;
-//       reset();
-//     }
-//   } else if (slide.value > 0 && clientX < window.innerWidth / 2) {
-//     slide.value -= 1;
-//     reset();
-//   } else if (slide.value === 0 && clientX < window.innerWidth / 2) {
-//     playProgressbar();
-//   }
-// }
 
 function autoSlide() {
   if (slide.value === slideData.value.list.length - 1) {
     goToNextPage(`/story/${slideData.value.id + 1}`);
-    if (slideData.value.id + 1 === 2) {
+    if (slideDataIndex.value + 1 === numOfTotalPages.value) {
       goToNextPage("/");
     }
     slide.value += 1;
   }
-
   if (slide.value < slideData.value.list.length - 1) {
     slide.value += 1;
   }
   reset();
 }
 
-function holdHandler(event) {
-  const { type, timeStamp } = event;
-  if (type === "mousedown") {
-    mouseEventTime.value.mousedown = timeStamp;
+function holdHandler() {
+  if (isPause.value === false) {
     pausePercentage.value = currentPercentage.value;
     clearInterval(progressbarTimer.value);
     clearInterval(slideTimer.value);
     modifiedDuration.value =
       duration.value - (pausePercentage.value * duration.value) / 100;
-  }
-
-  if (type === "mouseup") {
-    mouseEventTime.value.mouseup = timeStamp;
+  } else {
     playProgressbar();
   }
+  isPause.value = !isPause.value;
 }
 
 function reset() {
@@ -140,7 +151,7 @@ function reset() {
 }
 
 onMounted(() => {
-  fetchData();
+  fetchData(route.params.id);
   playProgressbar();
   localStorage.setItem(`isActive${route.params.id}`, true);
 });
@@ -150,10 +161,6 @@ watch(slide, (newSlide) => {
   reset();
   playProgressbar();
 });
-
-// watch(route, () => {
-//   window.location.reload();
-// });
 </script>
 
 <template>
@@ -177,29 +184,29 @@ watch(slide, (newSlide) => {
         />
       </div>
     </div>
-    <div class="story-close" @click="goToNextPage('/')">
-      <q-icon name="close" size="24px" />
+    <div class="guides-gradient" />
+    <div class="guides-close" @click="goToNextPage('/')">
+      <q-icon name="close" size="36px" />
     </div>
-    <div class="left-arrow" @click="slideLeftClick">
-      <q-icon name="chevron_left" size="32px" />
-    </div>
-    <div class="right-arrow" @click="slideRightClick">
-      <q-icon name="chevron_right" size="32px" />
+    <div class="guides-pause" @click="holdHandler">
+      <!-- 호출을 하는게 맞는지, 포인터만 넘기는게 맞는지? -->
+      <q-icon v-if="isPause" name="play_arrow" size="36px" />
+      <q-icon v-else name="pause" size="36px" />
     </div>
     <q-carousel
       v-model="slide"
       transition-prev="slide-right"
       transition-next="slide-left"
       animated
-      class="story-carousel-wrapper"
+      class="guides-carousel-wrapper"
+      @click="slideByClick($event)"
     >
       <q-carousel-slide
-        class="story-carousel"
+        class="guides-carousel"
         v-for="(_, i) in slideData?.list"
         :key="i"
         :name="i"
-        @mousedown="holdHandler($event)"
-        @mouseup="holdHandler($event)"
+        v-touch-pan.left.right="slideSwipe"
       >
         <div class="carousel-background">
           <p class="carousel-content">[주요 기능]</p>
@@ -210,11 +217,15 @@ watch(slide, (newSlide) => {
 </template>
 
 <style lang="scss">
-@media only screen and (max-width: 475px) {
+/* @media only screen and (max-width: 475px) {
   .trippy-stroy-wrapper {
     max-width: 360px;
   }
-}
+
+  .carousel-background {
+    width: 360px;
+  }
+} */
 
 .trippy-stroy-wrapper {
   position: relative;
@@ -222,56 +233,24 @@ watch(slide, (newSlide) => {
   height: 100vh;
   margin: 0 auto;
 
-  .left-arrow {
-    position: absolute;
-    top: 50vh;
-    left: 0;
-    color: white;
-    z-index: 1;
-    border-radius: 50%;
-
-    &:hover {
-      background-color: rgb(20, 20, 21, 0.3);
-    }
-  }
-
-  .right-arrow {
-    position: absolute;
-    top: 50vh;
-    right: 0;
-    color: white;
-    z-index: 1;
-    border-radius: 50%;
-
-    &:hover {
-      background-color: rgb(20, 20, 21, 0.3);
-    }
-  }
-
-  .story-close {
-    position: absolute;
-    color: white;
-    right: 0;
-    top: 0;
-    z-index: 10;
-  }
-
   .indicator-wrapper {
     position: absolute;
     display: flex;
+    top: 15px;
     width: 100%;
     height: 30px;
-    z-index: 2;
-    background: linear-gradient(180deg, #141415 0%, rgba(20, 20, 21, 0) 100%);
+    z-index: 9;
 
     .indicator-background {
       background-color: rgba(217, 222, 232, 0.3);
       margin-left: 4px;
       height: 3px;
+      border-radius: 2px;
 
       .indicator {
         background-color: rgb(217, 222, 232);
         height: 3px;
+        border-radius: 1px;
       }
 
       &:first-child {
@@ -284,11 +263,40 @@ watch(slide, (newSlide) => {
     }
   }
 
-  .story-carousel-wrapper {
+  .guides-gradient {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(180deg, #141415 0%, rgba(20, 20, 21, 0) 100%);
+    z-index: 5;
+  }
+
+  .guides-close {
+    position: absolute;
+    color: white;
+    right: 0;
+    top: 15px;
+    margin: 8px 16px;
+    z-index: 10;
+  }
+
+  .guides-pause {
+    position: absolute;
+    color: white;
+    right: 50px;
+    top: 15px;
+    margin: 8px 16px;
+    z-index: 10;
+  }
+
+  .guides-carousel-wrapper {
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    background-color: black;
 
-    .story-carousel {
+    .guides-carousel {
       padding: 0;
 
       .carousel-background {

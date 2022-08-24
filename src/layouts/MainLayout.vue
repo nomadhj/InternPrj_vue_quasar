@@ -45,6 +45,7 @@ onMounted(() => {
         <p class="circle-card-desc">
           상기 아이콘을 클릭해서 내용을 확인할 수 있으나,<br />
           실제 앱에 배포 된 기능 중 일부는 삭제하였습니다.<br />
+          (모달 관련 기능, 스켈레톤 UI 등)<br />
           전체 기능은 실제 배포 된 앱에서 확인 가능합니다.
         </p>
         <p class="circle-card-desc">
@@ -120,7 +121,7 @@ onMounted(() => {
   background-size: cover;
 
   .circle-card-section {
-    height: 50vh;
+    height: 55vh;
 
     .circle-card-desc {
       margin: 10px;

@@ -1,116 +1,185 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import CircleImg from './CircleImg.vue';
+
+const router = useRouter();
+
+const profiles = ref(null);
+const profilesLen = ref(0);
+
+async function fetchProfile() {
+  const res = await fetch(
+    'https://vueproject-8c9fd-default-rtdb.firebaseio.com/story.json'
+  );
+  const data = await res.json();
+  profiles.value = data;
+  profilesLen.value = Object.keys(data).length;
+  console.log(data);
+}
+
+onMounted(() => {
+  fetchProfile();
+});
+</script>
+
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
+  <section class="main-wrapper">
+    <header class="header row">
+      <img src="images/logo.png" alt="logo" />
+      <q-icon
+        class="notification-icon"
+        name="notifications_none"
+        size="27.44px"
+        @click="router.push('/story/1')"
+      />
+    </header>
+    <div class="circle-content-wrapper row">
+      <CircleImg
+        v-for="profile in profiles"
+        :key="profile.id"
+        v-bind="profile"
+        :profileLen="profilesLen"
+      />
+    </div>
+
+    <q-card class="circle-card q-mt-md q-pd-lg">
+      <q-card-section class="column no-wrap circle-card-section">
+        <q-icon name="wallet" size="42px" />
+        <div class="circle-card-title">Wallet Watch 👀</div>
+        <div class="feature-img-wrapper row flex-center">
+          <q-img
+            class="circle-card-img q-mt-md"
+            src="https://trippy.place/img/img-push.963babe8.png"
+            alt="card image"
+            no-spinner
+          />
+        </div>
+        <p class="circle-card-desc">
+          Want to get APP PUSH notifications for your wallet activities? Want to
+          follow the whales? Track any wallet’s latest activities including
+          mints, buys and sells.
+        </p>
         <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
+          unelevated
+          rounded
+          label="Watch Now >"
+          class="circle-card-btn q-mt-md"
+          ref="button"
+          @click="() => navigate('/')"
         />
-
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar>
-    </q-header>
-
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
-
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
-    </q-drawer>
-
-    <q-page-container>
-      <router-view />
-    </q-page-container>
-  </q-layout>
+      </q-card-section>
+    </q-card>
+    <img
+      src="https://pub.angelleague.io/2022/06/29/1656485183_testImg.png"
+      alt=""
+    />
+  </section>
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
-
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
+<style lang="scss">
+@media only screen and (max-width: 800px) {
+  .main-wrapper {
+    max-width: 800px im !important;
   }
-]
+}
 
-export default defineComponent({
-  name: 'MainLayout',
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 475px;
+  height: 100vh;
+  margin: 0 auto;
+  background-color: black;
+  overflow: auto;
 
-  components: {
-    EssentialLink
-  },
+  .header {
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    width: 100%;
+    height: 60px;
 
-  setup () {
-    const leftDrawerOpen = ref(false)
+    img {
+      width: 165px;
+      height: 32px;
+    }
 
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
+    .notification-icon {
+      color: white;
     }
   }
-})
-</script>
+
+  .circle-content-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    min-height: 90px;
+    max-width: 475px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+  }
+}
+
+.circle-card {
+  position: relative;
+  width: 90%;
+  max-width: 475px;
+  margin: 0 auto 2rem auto;
+  padding-bottom: 2rem;
+  background: linear-gradient(
+    111.49deg,
+    rgba(224, 224, 224, 0.24) -8.95%,
+    rgba(227, 227, 227, 0.15) 114%
+  );
+  border-radius: 25px;
+  background-image: url('https://t4.ftcdn.net/jpg/04/91/94/07/240_F_491940770_ETcZHfu6eiI2ygQVwI6oXHFC28UH58PI.jpg');
+  background-size: cover;
+
+  .circle-card-section {
+    color: white;
+
+    .circle-card-title {
+      font-weight: 700;
+      font-size: 30px;
+    }
+
+    .circle-card-desc {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .feature-img-wrapper {
+      width: 100%;
+      margin: 0.5rem auto;
+      border-radius: 10px;
+
+      .circle-card-img {
+        width: 100%;
+        max-height: 250px;
+        margin: 0;
+      }
+    }
+
+    .circle-card-btn {
+      width: 100%;
+      height: 3rem;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 40px;
+    }
+  }
+}
+
+.circle-content-wrapper {
+  -ms-overflow-style: none;
+  /* for Internet Explorer, Edge */
+  scrollbar-width: none;
+  /* for Firefox */
+}
+
+.circle-content-wrapper::-webkit-scrollbar {
+  display: none;
+  /* for Chrome, Safari, and Opera */
+}
+</style>

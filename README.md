@@ -2,7 +2,8 @@
 
 ## 프로젝트 배포 Link
 
-- github 프로젝트 배포용 url (보안 이미지 및 코드 삭제, Mock 데이터 적용) : https://extraordinary-pudding-b04856.netlify.app/
+- github 프로젝트 배포용 url : https://extraordinary-pudding-b04856.netlify.app/
+  - (실제 서비스 앱인 만큼 배포한 코드에서 문제 될 만한 부분을 삭제하고 데이터베이스를 별도로 구현하였습니다.)
 - 실제 서비스 App url (모든 구현 기능 확인 가능) : https://trippy.place/
 
 ## 프로젝트 개요

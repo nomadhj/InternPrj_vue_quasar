@@ -10,7 +10,7 @@ const profilesLen = ref(0);
 
 async function fetchProfile() {
   const res = await fetch(
-    "https://vueproject-8c9fd-default-rtdb.firebaseio.com/story.json"
+    "https://vueprj-73cb3-default-rtdb.firebaseio.com/story.json"
   );
   const data = await res.json();
   profiles.value = data;
